@@ -61,6 +61,11 @@ void PrintOperator(Operator op)
 
 void PrintProgram(Expression* e)
 {
+	if (e == nullptr)
+	{
+		std::cout << "Programa mal formado" << std::endl;
+		return;
+	}
 	try
 	{
 		switch (e->expID)
@@ -70,13 +75,11 @@ void PrintProgram(Expression* e)
 			Operation* op = (Operation*)e;
 
 			// Print
-			std::cout << "(";
 			PrintProgram(op->left);
 			std::cout << " ";
 			PrintOperator(op->op);
 			std::cout << " ";
 			PrintProgram(op->right);
-			std::cout << ")";
 		} break;
 
 		case ExpressionID::E_FUNCTION_APPLICATION: {
@@ -119,7 +122,7 @@ void PrintProgram(Expression* e)
 			std::cout << lf->argIdentifier->name;
 			std::cout << ") T2 \n{\n   ";
 			PrintProgram(lf->body);
-			std::cout << "\n}";
+			std::cout << "\n}\n";
 		} break;
 
 		case ExpressionID::E_VAR_NAME: {
@@ -128,6 +131,65 @@ void PrintProgram(Expression* e)
 
 			// Print
 			std::cout << vn->name;
+		} break;
+		case ExpressionID::E_FUNCTION_DECLARATION: {
+			assert(!e->isValue, "################# Declaracao de funcao nao deve ser valor! ###############\n");
+			FunctionDeclaration* fd = (FunctionDeclaration*)e;
+			std::cout << fd->functionName << "(";
+			std::cout << fd->argIdentifier->name;
+			std::cout << ":T)" << std::endl;
+			std::cout << "{" << std::endl;
+			PrintProgram(fd->body);
+			std::cout << "\n}\n";
+		} break;
+		case ExpressionID::E_IF_ELSE: {
+			assert(!e->isValue, "################# If then else nao deve ser valor! ###############\n");
+			IfThenElse* ite = (IfThenElse*)e;
+			std::cout << "if (";
+			PrintProgram(ite->booleanTest);
+			std::cout << ")\n{\n\t";
+			PrintProgram(ite->iftrue);
+			std::cout << "\n}\nelse\n{\n\t";
+			PrintProgram(ite->iffalse);
+			std::cout << "\n}\n";
+		} break;
+		case ExpressionID::E_TRY_CATCH: {
+			assert(!e->isValue, "################# Try catch nao deve ser valor! ###############\n");
+			TryCatch* tc = (TryCatch*)e;
+			std::cout << "try\n{\n\t";
+			PrintProgram(tc->toTry);
+			std::cout << "\n}\ncatch\n{\n\t";
+			PrintProgram(tc->toCatch);
+			std::cout << "\n}\n";
+		} break;
+		case ExpressionID::E_UNARY_DEC: {
+			assert(!e->isValue, "################# Unary inc/dec nao deve ser valor! ###############\n");
+			UnaryDecrement* ud = (UnaryDecrement*)e;
+			std::cout << "(";
+			PrintProgram(ud->i);
+			std::cout << ")--";
+		} break;
+		case ExpressionID::E_UNARY_INC: {
+			assert(!e->isValue, "################# Unary inc/dec nao deve ser valor! ###############\n");
+			UnaryIncrement* ui = (UnaryIncrement*)e;
+			std::cout << "(";
+			PrintProgram(ui->i);
+			std::cout << ")++";
+		} break;
+		case ExpressionID::E_ERROR: {
+			std::cout << "Error" << std::endl;
+		} break;
+		case ExpressionID::E_SKIP: {
+			std::cout << "skip";
+		} break;
+		case ExpressionID::E_SEQUENCE: {
+			Sequence* sq = (Sequence*)e;
+			PrintProgram(sq->left);
+			std::cout << ";\n";
+			PrintProgram(sq->right);
+		} break;
+		default: {
+			std::cout << "Expression not recognized by the the function." << std::endl;
 		} break;
 		}
 	}

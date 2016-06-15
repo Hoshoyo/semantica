@@ -34,7 +34,8 @@ enum class ExpressionID
 	E_IF_ELSE,
 	E_VAR_DECLARATION,
 	E_DEREFERENCE,
-	E_TRY_CATCH
+	E_TRY_CATCH,
+	E_SEQUENCE
 };
 
 struct Expression
@@ -55,7 +56,7 @@ void DeleteExpression(Expression* ex);
 struct VariableName : Expression
 {
 	std::string name;
-	VariableName(std::string& name)
+	VariableName(std::string name)
 		: Expression(false, ExpressionID::E_VAR_NAME), name(name)
 	{
 	}
@@ -73,7 +74,7 @@ struct LambdaFunction : Expression
 	}
 	virtual ~LambdaFunction()
 	{
-		std::cout << argIdentifier << " " << body;
+		//std::cout << argIdentifier << " " << body;
 		//delete argIdentifier;
 		//DeleteExpression(body);
 	}
@@ -146,7 +147,7 @@ struct Pointer : Expression
 
 struct Error : Expression
 {
-	Error(int type)
+	Error()
 		: Expression(true, ExpressionID::E_ERROR)
 	{
 	}
@@ -182,8 +183,11 @@ struct FunctionDeclaration : Expression
 {
 	VariableName* argIdentifier;
 	Expression* body;
-	FunctionDeclaration(VariableName* vn, Expression* body)
-		: Expression(false, ExpressionID::E_FUNCTION_DECLARATION), argIdentifier(vn), body(body)
+	std::string functionName;
+
+	FunctionDeclaration(std::string functionName, VariableName* vn, Expression* body)
+		: Expression(false, ExpressionID::E_FUNCTION_DECLARATION), argIdentifier(vn), body(body),
+		functionName(functionName)
 	{
 	}
 	virtual ~FunctionDeclaration()
@@ -262,60 +266,12 @@ struct TryCatch : Expression
 	}
 };
 
-void DeleteExpression(Expression* ex)
+struct Sequence : Expression
 {
-	switch (ex->expID)
+	Expression* left;
+	Expression* right;
+	Sequence(Expression* left, Expression* right)
+		: Expression(false, ExpressionID::E_SEQUENCE), left(left), right(right)
 	{
-		case ExpressionID::E_VAR_NAME: {
-			delete ((VariableName*)ex);
-		} break;
-		case ExpressionID::E_INTEGER: {
-			delete ((Integer*)ex);
-		} break;
-		case ExpressionID::E_BOOLEAN: {
-			delete ((Boolean*)ex);
-		} break;
-		case ExpressionID::E_FUNCTION_APPLICATION: {
-			delete ((Application*)ex);
-		} break;
-		case ExpressionID::E_LAMBDA_FUNCTION: {
-			delete ((LambdaFunction*)ex);
-		} break;
-		case ExpressionID::E_OPERATION: {
-			delete ((Operation*)ex);
-		} break;
-		case ExpressionID::E_POINTER: {
-			delete ((Pointer*)ex);
-		} break;
-		case ExpressionID::E_ERROR: {
-			delete ((Error*)ex);
-		} break;
-		case ExpressionID::E_DEREFERENCE: {
-			delete ((Dereference*)ex);
-		} break;
-		case ExpressionID::E_FUNCTION_DECLARATION: {
-			delete ((FunctionDeclaration*)ex);
-		} break;
-		case ExpressionID::E_IF_ELSE: {
-			delete ((IfThenElse*)ex);
-		} break;
-		case ExpressionID::E_SKIP: {
-			delete ((Skip*)ex);
-		} break;
-		case ExpressionID::E_TRY_CATCH: {
-			delete ((TryCatch*)ex);
-		} break;
-		case ExpressionID::E_UNARY_DEC: {
-			delete ((UnaryDecrement*)ex);
-		} break;
-		case ExpressionID::E_UNARY_INC: {
-			delete ((UnaryIncrement*)ex);
-		} break;
-		case ExpressionID::E_VAR_DECLARATION: {
-			delete ((VariableDeclaration*)ex);
-		} break;
-		default: {
-			throw "Bad Deletion";
-		} break;
 	}
-}
+};
