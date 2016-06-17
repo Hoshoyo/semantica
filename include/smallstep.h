@@ -26,8 +26,11 @@ class SmallStep
 	static int step_number;
 
 	static std::vector<MemoryValue> memory;
-	static bool NameExistMemory(std::string& name);
+
+	static bool NameExistMemory(std::string& name, Expression** mv);
 	static Expression* Substitution(VariableName* param_name, Expression* body, Expression* argument);
+	static LambdaFunction* LambdaFromDeclaration(FunctionDeclaration* fd);
+	static Expression* CopyExpression(Expression* exp);
 public:
 	static Expression* Step(Expression* ast);
 	static void PrintError(SError error_type);

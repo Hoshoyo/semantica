@@ -2,11 +2,14 @@
 #include "expression.h"
 #include "smallstep.h"
 #include "utils.h"
+#include "memory.h"
+#include <vld.h>
 
 #define NL (std::cout << std::endl)
 
 int main(int argc, char** argv)
 {
+	
 	//	# Declaração de programa para calcular fatorial
 	//
 	//	fac(int:x)
@@ -14,19 +17,35 @@ int main(int argc, char** argv)
 	//		if(x == 1)
 	//			1
 	//		else
-	//			(fac, x - 1)
-	//	}
+	//			(fac, x - 1) * x
+	//	};
+	//
+	//	(fac, 5)
+	//
 	//	Valor esperado x!
-	Expression* fac_program = new FunctionDeclaration(std::string("fac"), new VariableName(std::string("x")),
-		new IfThenElse(
-			new Operation(new VariableName("x"), new Integer(1), Operator::O_EQUALS),
-			new Integer(1),
-			new Application(new VariableName("fac"),
-				new Operation(new VariableName("x"), new Integer(1), Operator::O_MINUS))
-		)
-	);
-	//PrintProgram(fac_program); NL;
-
+	Expression* fac_program = 
+		new Sequence(
+			new FunctionDeclaration(
+				std::string("fac"), 
+				new VariableName(std::string("x")),
+				new IfThenElse(
+					new Operation(new VariableName("x"), new Integer(1), Operator::O_EQUALS),
+					new Integer(1),
+					new Operation(
+						new Application(new VariableName("fac"),
+							new Operation(new VariableName("x"), new Integer(1), Operator::O_MINUS)),
+						new VariableName("x"),
+						Operator::O_MULT
+					)
+				)
+			),
+			new Application(
+				new VariableName("fac"),
+				new Integer(5)
+			)
+		);
+	PrintProgram(fac_program); NL;
+	
 	//	# Declaração de programa para calcular (5 + 4) * (2 / 2)
 	//
 	//	(5 + 4) * (2 / 2)
@@ -37,7 +56,7 @@ int main(int argc, char** argv)
 		new Operation(new Integer(2), new Integer(1), Operator::O_DIV),
 		Operator::O_MULT);
 	//PrintProgram(op_program); NL;
-
+	
 	//	# Declaração de programa para teste do if
 	//
 	//	if (2 == 1)
@@ -56,7 +75,7 @@ int main(int argc, char** argv)
 		new Operation(new Integer(2), new Integer(0), Operator::O_DIV)
 	);
 	//PrintProgram(if_program); NL;
-
+	
 	//	# Declaração de programa para teste do try/catch
 	//
 	//	try 
@@ -74,7 +93,7 @@ int main(int argc, char** argv)
 		new Operation(new Integer(1), new Integer(1), Operator::O_DIV)
 	);
 	//PrintProgram(try_program); NL;
-
+	
 	// # Declaração de programa para teste do ++ e --
 	//
 	//	((3 + (4++ - 3)))--
@@ -89,7 +108,7 @@ int main(int argc, char** argv)
 		Operator::O_PLUS
 	));
 	//PrintProgram(un_program); NL;
-
+	
 	// # Declaração de programa para teste de declaração de função
 	//
 	//	soma_um(x:T)
@@ -103,7 +122,7 @@ int main(int argc, char** argv)
 		new Operation(new Integer(1), new Integer(1), Operator::O_PLUS)
 	);
 	//PrintProgram(decl_program); NL;
-
+	
 	// # Declaração de programa para teste da sequência de comandos
 	//
 	//	soma_um(x:T)
@@ -122,7 +141,7 @@ int main(int argc, char** argv)
 		new FunctionDeclaration(std::string("soma_um"), new VariableName("x"), new Integer(1))
 	);
 	//PrintProgram(sq_program);
-
+	/*
 	//	# Declaração de programa para teste de aplicação de função
 	//
 	//	(_(x:T1) T2 
@@ -155,15 +174,38 @@ int main(int argc, char** argv)
 			),
 			new Integer(5)
 		);
-	PrintProgram(ap_program);
+	//PrintProgram(ap_program);
+	
+	//	# Declaração de programa para teste de declaração de variáveis
+	//
+	//	var T : y 2 + 2;
+	//	(_(x:T1) T2 { x + !y }, 5)
+	//
+	//	Valor esperado: 9
+	Expression* de_program =
+		new Sequence(
+			new VariableDeclaration(
+				new VariableName("y"),
+				new Operation(new Integer(2), new Integer(2), Operator::O_PLUS)
+			),
+			new Application(
+				new LambdaFunction(
+					new VariableName("x"),
+					new Operation(new VariableName("x"), new Dereference(new VariableName("y")), Operator::O_PLUS)
+				),
+				new Integer(5)
+			)
+		);
 
-
-
+	
 	// Small Step aplicação
-	Expression* final_value = ap_program;
+	Expression* final_value = de_program;
 	while (!final_value->isValue)
 	{
 		final_value = SmallStep::Step(final_value);
+		PrintProgram(final_value);
+		std::cout << std::endl << std::endl;;
+		//std::cin.get();
 		if (final_value != nullptr)
 		{
 			if (final_value->expID == ExpressionID::E_ERROR)
@@ -179,7 +221,20 @@ int main(int argc, char** argv)
 		}
 	}
 	std::cout << "\n";
+	std::cout << "Valor final do programa: ";
 	PrintProgram(final_value);
+	*/
+		delete fac_program;
+		delete op_program;
+		delete if_program;
+		delete try_program;
+		delete un_program;
+		delete decl_program;
+		delete sq_program;
+	//	delete ap_program;	 // problem deleting
+	//	delete de_program;	 // problem deleting
 
+	std::cout << GetTotalMemoryUsed() << std::endl;
+	//ClearMemory();
 	return std::cin.get();
 }

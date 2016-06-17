@@ -240,14 +240,14 @@ struct Skip : Expression
 
 struct Dereference : Expression
 {
-	VariableName* var;
-	Dereference(VariableName* var)
-		: Expression(false, ExpressionID::E_DEREFERENCE), var(var)
+	VariableName* pointer;
+	Dereference(VariableName* pointer)
+		: Expression(false, ExpressionID::E_DEREFERENCE), pointer(pointer)
 	{
 	}
 	virtual ~Dereference()
 	{
-		DeleteExpression(var);
+		DeleteExpression(pointer);
 	}
 };
 
@@ -273,5 +273,10 @@ struct Sequence : Expression
 	Sequence(Expression* left, Expression* right)
 		: Expression(false, ExpressionID::E_SEQUENCE), left(left), right(right)
 	{
+	}
+	~Sequence()
+	{
+		DeleteExpression(left);
+		DeleteExpression(right);
 	}
 };
